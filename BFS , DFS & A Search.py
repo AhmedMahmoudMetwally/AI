@@ -60,6 +60,7 @@ def euclidean_heuristic(state):
     return h
 
 # BFS algorithm with accurate node expansion count
+# BFS algorithm
 def bfs(initial_state):
     queue = deque([(initial_state, [])])
     visited = set()
@@ -71,12 +72,10 @@ def bfs(initial_state):
         
         if is_goal(state):
             end_time = time.time()
-            # Including the goal node in the expanded count
-            return path, len(path), nodes_expanded + 1, len(path), end_time - start_time
+            return path, len(path), nodes_expanded, len(path), end_time - start_time
         
-        if tuple(map(tuple, state)) not in visited:
-            visited.add(tuple(map(tuple, state)))
-            nodes_expanded += 1
+        visited.add(tuple(map(tuple, state)))
+        nodes_expanded += 1
         
         for move in moves:
             next_state = generate_next_state(state, move)
@@ -84,18 +83,15 @@ def bfs(initial_state):
                 queue.append((next_state, path + [move]))
     
     return None, None, None, None, None
-    
-    # DFS recursive algorithm with accurate node expansion count
-def dfs_recursive(state, path, visited, depth_limit, nodes_expanded):
-    # Check if the current state is the goal
-    if is_goal(state):
-        return path, nodes_expanded + 1  # Include the goal node in count
 
-    # If depth limit reached, return without further expansion
+# DFS recursive algorithm with accurate node expansion count
+def dfs_recursive(state, path, visited, depth_limit, nodes_expanded):
+    if is_goal(state):
+        return path, nodes_expanded + 1
+
     if depth_limit == 0:
         return None, nodes_expanded
 
-    # Mark the current state as visited
     visited.add(tuple(map(tuple, state)))
     nodes_expanded += 1
 
@@ -106,21 +102,19 @@ def dfs_recursive(state, path, visited, depth_limit, nodes_expanded):
             result_path, result_nodes_expanded = dfs_recursive(
                 next_state, path + [move], visited, depth_limit - 1, nodes_expanded
             )
-            if result_path:  # Goal found in this branch
+            if result_path:
                 return result_path, result_nodes_expanded
 
-    # Unmark the state after exploring all children (backtracking)
     visited.remove(tuple(map(tuple, state)))
     return None, nodes_expanded
 
-# DFS wrapper function with depth limit
-def dfs(initial_state, depth_limit=50):
+# DFS wrapper function with depth limit of 5
+def dfs(initial_state, depth_limit=5):
     visited = set()
     start_time = time.time()
     path, nodes_expanded = dfs_recursive(initial_state, [], visited, depth_limit, 0)
     end_time = time.time()
     
-    # If path found, return relevant information
     if path is not None:
         return path, len(path), nodes_expanded, len(path), end_time - start_time
     return None, None, None, None, None
@@ -138,7 +132,7 @@ def a_star_search(initial_state, heuristic_func):
         
         if is_goal(current_state):
             end_time = time.time()
-            return path, len(path), nodes_expanded, len(path), end_time - start_time
+            return path, len(path), nodes_expanded + 1, len(path), end_time - start_time
         
         visited.add(tuple(map(tuple, current_state)))
         nodes_expanded += 1
@@ -193,36 +187,7 @@ print("Cost of path:", dfs_cost)
 print("Nodes expanded:", dfs_nodes_expanded)
 print("Search depth:", dfs_depth)
 print("Running time:", dfs_time, "seconds")
- # A* search algorithm with heuristic function as parameter
-def a_star_search(initial_state, heuristic_func):
-    frontier = []
-    heapq.heappush(frontier, (0 + heuristic_func(initial_state), initial_state, []))
-    visited = set()
-    nodes_expanded = 0  # Count of nodes expanded
-    start_time = time.time()
-    
-    while frontier:
-        _, current_state, path = heapq.heappop(frontier)
-        
-        # Check if the current state is the goal
-        if is_goal(current_state):
-            end_time = time.time()
-            # Including the goal node in the expanded count
-            return path, len(path), nodes_expanded + 1, len(path), end_time - start_time
-        
-        if tuple(map(tuple, current_state)) not in visited:
-            visited.add(tuple(map(tuple, current_state)))
-            nodes_expanded += 1  # Increment for every new unique node checked
-        
-        for move in moves:
-            next_state = generate_next_state(current_state, move)
-            if next_state and tuple(map(tuple, next_state)) not in visited:
-                new_path = path + [move]
-                heapq.heappush(frontier, (len(new_path) + heuristic_func(next_state), next_state, new_path))
-    
-    return None, None, None, None, None
 
-# Calling A* for Manhattan and Euclidean heuristics with adjusted counting
 print("\nA* Search using Manhattan Heuristic:")
 a_star_manhattan_path, a_star_manhattan_cost, a_star_manhattan_nodes_expanded, a_star_manhattan_depth, a_star_manhattan_time = a_star_search(initial_state, manhattan_heuristic)
 print("Path:", a_star_manhattan_path)
